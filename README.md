@@ -6,7 +6,9 @@ A simple implementation of proxy data cache service for HackerNews API in .NET8
 2. Change directory `cd SantanderTest`
 3. Execute command `powershell start http://localhost:5000/swagger/index.html | dotnet run --project SantanderTest`
 4. Alternatively open the solution from Visual Studio and run SantanderTest profile
-5. Cache expiration settings can be changed in `appsettings.Development.json`
+
+Cache expiration settings can be changed in `appsettings.Development.json` <br/>
+Service logs every Hacker News API fetch in the console, useful for quick tests of the caching logic
 
 ## Assumptions
 1. List of best story ids returned from [Best Stories API](https://hacker-news.firebaseio.com/v0/beststories.json) is ordered by descending score value. Although it is not explicitly stated on the [Hacker News API](https://github.com/HackerNews/API) documentation page, inspection of the data confirms that is in fact the case. 
