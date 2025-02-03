@@ -14,5 +14,5 @@ A simple implementation of proxy data cache service for HackerNews API in .NET8
 
 ## Given more time
 1. I would handle `Dead` flag
-2. Chunkify fetching of the individual stories to avoid thread pool starvation on incoming requests
-2. Probably there is a better implementartion with optimistick locking / lockless / minim locking with AsyncLazy<T> in conjunction with ConcurrentDictionary<K,V>
+2. I would chunkify fetching of the individual stories to avoid thread pool starvation on incoming requests
+2. There is probably a better implementartion with optimistick locking / lockless / minimal locking via AsyncLazy<T> and ConcurrentDictionary<K,V>
