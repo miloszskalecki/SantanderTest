@@ -1,42 +1,50 @@
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
+using SantanderTest.Clients;
+using SantanderTest.Settings;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddOptions<StoryServiceSettings>()
+    .BindConfiguration(StoryServiceSettings.Section)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IHackerNewsApi, HackerNewsApi>();
+builder.Services.AddHttpClient<IHackerNewsApi, HackerNewsApi>((services, client) =>
+{
+    var settings = services.GetRequiredService<IOptions<StoryServiceSettings>>();
+    client.BaseAddress = new Uri(settings.Value.HackerNewsEndpoint);
+});
+
+builder.Services.AddLogging(builder => builder.AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+    options.ColorBehavior = LoggerColorBehavior.Enabled;
+    options.TimestampFormat = "[yyyy-MM-dd HH:mm:ss.fffff] ";
+}));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => options.EnableTryItOutByDefault());
 }
 
-var summaries = new[]
+app.MapGet("/stories/{count}", async (IHackerNewsApi api, int count) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var stories = await api.GetBestStoriesAsync();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return Results.Ok(stories);
 })
-.WithName("GetWeatherForecast")
+.WithName("GetBestStories")
+.WithDescription("Retrieves the details of the best n stories from the Hacker News API, as determined by their score")
+.WithSummary("Retreives best Hacker News stories")
+.Produces<IEnumerable<long>>()
 .WithOpenApi();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
