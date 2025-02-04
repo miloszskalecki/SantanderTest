@@ -3,11 +3,11 @@ A simple implementation of proxy data cache service for HackerNews API in .NET8
 
 ## Running
 1. Clone repository `git clone https://github.com/miloszskalecki/SantanderTest.git`
-2. Execute command `start http://localhost:5000/swagger/index.html & dotnet run --project SantanderTest` from the directory solution is located
+2. Execute command `start http://localhost:5000/swagger/index.html & dotnet run --project SantanderTest` from the solution directory
 3. Alternatively open the solution from Visual Studio and run SantanderTest profile
 5. To run tests & coverage execute `dotnet test & start SantanderTest.Tests\report\index.html`
 
-Cache expiration settings can be changed in `appsettings.Development.json`
+Cache expiration settings can be changed in `appsettings.Development.json` <br/>
 Service logs every Hacker News API fetch in the console, useful for quick tests of the caching logic
 
 ## Assumptions
