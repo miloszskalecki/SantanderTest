@@ -8,6 +8,9 @@ A simple implementation of proxy data cache service for HackerNews API in .NET8
 4. Cache expiration settings can be changed in `appsettings.Development.json`
 5. To run tests and display coverage report execute `dotnet test & start SantanderTest.Tests\report\index.html`
 
+Cache expiration settings can be changed in `appsettings.Development.json` <br/>
+Service logs every Hacker News API fetch in the console, useful for quick tests of the caching logic
+
 ## Assumptions
 1. List of best story ids returned from [Best Stories API](https://hacker-news.firebaseio.com/v0/beststories.json) is ordered by descending score value. Although it is not explicitly stated on the [Hacker News API](https://github.com/HackerNews/API) documentation page, inspection of the data confirms that is in fact the case. 
 2. Stories can be edited
@@ -15,5 +18,5 @@ A simple implementation of proxy data cache service for HackerNews API in .NET8
 
 ## Given more time
 1. I would handle `Dead` flag
-2. Chunkify fetching of the individual stories to avoid thread pool starvation on incoming requests
-2. Probably there is a better implementartion with optimistick locking / lockless / minim locking with AsyncLazy<T> in conjunction with ConcurrentDictionary<K,V>
+2. I would chunkify fetching of the individual stories to avoid thread pool starvation on incoming requests
+2. There is probably a better implementartion with optimistick locking / lockless / minimal locking via AsyncLazy<T> and ConcurrentDictionary<K,V>
