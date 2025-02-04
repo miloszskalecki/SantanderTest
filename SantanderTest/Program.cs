@@ -4,6 +4,7 @@ using Refit;
 using SantanderTest.Clients;
 using SantanderTest.Services;
 using SantanderTest.Settings;
+using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,3 +56,6 @@ app.MapGet("/stories/{count}", async (IStoryService storyService, int count = 5)
 .WithOpenApi();
 
 app.Run();
+
+//[ExcludeFromCodeCoverage]
+//public partial class Program { }

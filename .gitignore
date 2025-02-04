@@ -153,6 +153,10 @@ coverage*.info
 *.coverage
 *.coveragexml
 
+# ReportGenerator coverage files
+report/
+history/
+
 # NCrunch
 _NCrunch_*
 .*crunch*.local.xml

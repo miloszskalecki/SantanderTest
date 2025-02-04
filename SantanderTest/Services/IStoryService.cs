@@ -1,6 +1,6 @@
 ﻿namespace SantanderTest.Services;
 
-interface IStoryService
+internal interface IStoryService
 {
     Task<IEnumerable<Story>> GetBestStoriesAsync(int count);
 }

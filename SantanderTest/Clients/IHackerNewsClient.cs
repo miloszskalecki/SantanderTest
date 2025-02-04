@@ -2,7 +2,7 @@
 
 namespace SantanderTest.Clients;
 
-interface IHackerNewsClient
+internal interface IHackerNewsClient
 {
     [Get("/beststories.json")]
     Task<List<long>?> GetBestStoriesAsync();

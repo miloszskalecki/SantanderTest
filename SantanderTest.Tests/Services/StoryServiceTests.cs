@@ -39,7 +39,41 @@ public class StoryServiceTests
     }
 
     [Test]
+    public async Task GetBestStoriesAsyncReturnsEmptyIfCountIsZeroOrNegative()
+    {
+        var stories1 = await _service.GetBestStoriesAsync(0);
+        var stories2 = await _service.GetBestStoriesAsync(-1);
+
+        Assert.That(stories1, Is.Empty);
+        Assert.That(stories2, Is.Empty);
+    }
+
+    [Test]
     public async Task GetBestStoriesAsyncFetchesAndCachesListIfNotYetCached()
+    {
+        object? notCached = null;
+
+        _cacheMock.Setup(p => p.TryGetValue(StoryService.BestStoriesKey, out notCached))
+            .Returns(false);
+
+        _cacheMock.Setup(p => p.CreateEntry(StoryService.BestStoriesKey))
+            .Returns(Mock.Of<ICacheEntry>())
+            .Verifiable(Times.Once());
+
+        _clientMock.Setup(p => p.GetBestStoriesAsync())
+            .Returns(Task.FromResult<List<long>?>(null))
+            .Verifiable(Times.Once());
+
+        var stories = await _service.GetBestStoriesAsync(10);
+
+        _clientMock.VerifyAll();
+        _cacheMock.VerifyAll();
+
+        Assert.That(stories, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetBestStoriesAsyncFetchesAndCachesListIfNotYetCached1()
     {
         object? notCached = null;
 
@@ -54,10 +88,12 @@ public class StoryServiceTests
             .Returns(Task.FromResult<List<long>?>([]))
             .Verifiable(Times.Once());
 
-        _ = await _service.GetBestStoriesAsync(10);
+        var stories = await _service.GetBestStoriesAsync(10);
 
         _clientMock.VerifyAll();
         _cacheMock.VerifyAll();
+
+        Assert.That(stories, Is.Empty);
     }
 
     [Test]
@@ -107,13 +143,15 @@ public class StoryServiceTests
             .Verifiable(Times.Once());
 
         _clientMock.Setup(p => p.GetStoryAsync(It.IsAny<long>()))
-            .Returns(Task.FromResult<HackerNewsStory?>(new()))
+            .Returns(Task.FromResult<HackerNewsStory?>(new() { By = "by"}))
             .Verifiable(Times.Once());
 
-        _ = await _service.GetBestStoriesAsync(10);
+        var stories1 = await _service.GetBestStoriesAsync(10);
 
         _clientMock.VerifyAll();
         _cacheMock.VerifyAll();
+
+        Assert.That(stories1, Is.Not.Empty);
     }
 
     [Test]
@@ -235,5 +273,47 @@ public class StoryServiceTests
         Assert.That(exception, Is.Not.Null);
 
         _cacheMock.Verify(p => p.Remove(StoryService.BestStoriesKey));
+    }
+
+    [Test]
+    public async Task GetBestStoriesLogsTheFetches()
+    {
+        object? storyTask = null;
+        object? storyListTask = null;
+
+        _cacheMock.Setup(p => p.TryGetValue(StoryService.BestStoriesKey, out storyListTask))
+            .Returns(false);
+
+        _cacheMock.Setup(p => p.TryGetValue(It.IsAny<long>(), out storyTask))
+            .Returns(false);
+
+        _cacheMock.Setup(p => p.CreateEntry(StoryService.BestStoriesKey))
+            .Returns(Mock.Of<ICacheEntry>());
+
+        _cacheMock.Setup(p => p.CreateEntry(It.IsAny<long>()))
+            .Returns(Mock.Of<ICacheEntry>());
+
+        _clientMock.Setup(p => p.GetBestStoriesAsync())
+            .Returns(Task.FromResult<List<long>?>([1L]));
+
+        _clientMock.Setup(p => p.GetStoryAsync(It.IsAny<long>()))
+            .Returns(Task.FromResult<HackerNewsStory?>(new()));
+
+        //_logger.Setup(p => p.IsEnabled(It.Is<LogLevel>(a => a == LogLevel.Information)))
+        //    .Returns(true)
+        //    .Verifiable(Times.Exactly(2));
+
+        _logger.Setup(p => p.Log(
+                
+            It.Is<LogLevel>(l => l == LogLevel.Information),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+            .Verifiable(Times.Exactly(2));    
+
+        _ = await _service.GetBestStoriesAsync(10);
+
+        _logger.VerifyAll();
     }
 }

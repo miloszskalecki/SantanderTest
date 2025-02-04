@@ -21,7 +21,7 @@ sealed class StoryService(
             return [];
 
         var bestStoryList = await GetOrAddAsync(BestStoriesKey, FetchBestStoriesAsync, settings.Value.StoryListExpiration);
-        if (bestStoryList is null || bestStoryList.Count == 0)
+        if (!bestStoryList.Any())
             return [];
 
         var bestStoryTasks = bestStoryList
@@ -38,23 +38,21 @@ sealed class StoryService(
 
     private async Task<List<long>> FetchBestStoriesAsync()
     {
-        if (logger.IsEnabled(LogLevel.Information))
-            logger.LogInformation("Retrieving list of best stories");
+        logger.LogInformation("Retrieving list of best stories");
 
         return await hackerNewsClient.GetBestStoriesAsync() ?? [];
     }
 
     private async Task<Story?> FetchStoryAsync(long storyId)
     {
-        if (logger.IsEnabled(LogLevel.Information))
-            logger.LogInformation("Retrieving story {storyId}", storyId);
+        logger.LogInformation("Retrieving story {storyId}", storyId);
 
         var hackerNewsStory = await hackerNewsClient.GetStoryAsync(storyId);
 
         return hackerNewsStory?.ToStory();
     }
 
-    private async Task<T?> GetOrAddAsync<T>(object key, Func<Task<T>> factory, TimeSpan expiration)
+    private async Task<T> GetOrAddAsync<T>(object key, Func<Task<T>> factory, TimeSpan expiration)
     {
         Task<T>? task = null;
 
